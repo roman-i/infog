@@ -22,6 +22,7 @@ function getParameterByName(name) {
 }
 
 var useExactTime = getParameterByName('exacttime') === "true";
+var useColor = getParameterByName('color') === "true";
 
 var svgWidth = 1000,
     svgHeight = 2000,
@@ -190,66 +191,78 @@ svg.on("click", function() { alert("svg"); });
 
 
 d3.text("assets/files/music.csv", function(text) {
-  var rows = d3.csv.parseRows(text).map(function(row) {
-    var momentDate = moment(row[1], "MMM DD, YYYY at HH:mmA"); // November 04, 2014 at 12:07PM
-    return {
-        artist: row[0],
-        playDate: momentDate,
-        title: row[2],
-        energy: row[3],
-        genres: row[4].split(","),
-        groupDay: momentDate.format("YYYYMMDD"), // sortable/groupable day
-        sortDay: momentDate.format("YYYYMMDDHHmm")
-    }
-  });
 
-  drawGrid();
+  d3.text("assets/files/genre.csv", function(genretext) {
 
-  rows = rows.sort(function(d) { d.sortDay; })
-
-  // it is global
-  smallestWeek = d3.min(rows, function(d) {return d.playDate.week();});
-
-  var rowsByDay = d3
-    .nest()
-    .key(function(d) { return d.groupDay})
-    .sortKeys(d3.ascending)
-    .map(rows, d3.map);
-
-  var minMaxTimeByDay = d3
-    .nest()
-    .key(function(d) { return d.groupDay})
-    .rollup(function(items) { return {
-        max: d3.max(items, function(d) { return d.playDate.hour() * 60  + d.playDate.minute(); }),
-        min: d3.min(items, function(d) { return d.playDate.hour() * 60  + d.playDate.minute(); })
-    }})
-    .map(rows, d3.map);
-
-  var sortedDays = rowsByDay.keys().sort(d3.ascending);
-
-  var gs = svg
-    .selectAll("g.day")
-    .data(sortedDays)
-    .enter()
-    .append("svg:g")
-    .attr("class", function(d) {
-        return d;
-    })
-    .attr("day", function(d) {
-        return d;
-    })
-    .attr("dayOfWeek", function(d) {
-        return getDayOfWeek(d);
-    })
-    .attr("transform", function(d) {
-        var coords = getBlockCoordByDate(d);
-        var absCoords = [blockWidth * coords[0], blockHeight * coords[1]];
-        return "translate(" + absCoords[0] + ", " + absCoords[1] + ")";
-    })
-    .on("click", function(d) {
-        animateToDay(d);
-        d3.event.stopPropagation();
+    var genres = d3.csv.parseRows(genretext).map(function(row) {
+       return {
+          genre: row[0],
+          color: "#" + row[1]
+       }
     });
+
+    console.log(genres);
+
+    var rows = d3.csv.parseRows(text).map(function(row) {
+        var momentDate = moment(row[1], "MMM DD, YYYY at HH:mmA"); // November 04, 2014 at 12:07PM
+        return {
+            artist: row[0],
+            playDate: momentDate,
+            title: row[2],
+            energy: row[3],
+            genres: row[4].split(","),
+            groupDay: momentDate.format("YYYYMMDD"), // sortable/groupable day
+            sortDay: momentDate.format("YYYYMMDDHHmm")
+        }
+    });
+
+    drawGrid();
+
+    rows = rows.sort(function(d) { d.sortDay; })
+
+    // it is global
+    smallestWeek = d3.min(rows, function(d) {return d.playDate.week();});
+
+    var rowsByDay = d3
+        .nest()
+        .key(function(d) { return d.groupDay})
+        .sortKeys(d3.ascending)
+        .map(rows, d3.map);
+
+    var minMaxTimeByDay = d3
+        .nest()
+        .key(function(d) { return d.groupDay})
+        .rollup(function(items) { return {
+            max: d3.max(items, function(d) { return d.playDate.hour() * 60  + d.playDate.minute(); }),
+            min: d3.min(items, function(d) { return d.playDate.hour() * 60  + d.playDate.minute(); })
+        }})
+        .map(rows, d3.map);
+
+    var sortedDays = rowsByDay.keys().sort(d3.ascending);
+
+    var gs = svg
+        .selectAll("g.day")
+        .data(sortedDays)
+        .enter()
+        .append("svg:g")
+        .attr("class", function(d) {
+            return d;
+        })
+        .attr("day", function(d) {
+            return d;
+        })
+        .attr("dayOfWeek", function(d) {
+            return getDayOfWeek(d);
+        })
+        .attr("transform", function(d) {
+            var coords = getBlockCoordByDate(d);
+            var absCoords = [blockWidth * coords[0], blockHeight * coords[1]];
+            return "translate(" + absCoords[0] + ", " + absCoords[1] + ")";
+        })
+        .on("click", function(d) {
+            animateToDay(d);
+            d3.event.stopPropagation();
+        });
 
 //  var gsBg = gs
 //    .selectAll("rect")
@@ -260,27 +273,27 @@ d3.text("assets/files/music.csv", function(text) {
 //    .attr("fill", "white")
 //    .exit();
 
-  var itemsByDay = {};
-  var minutePixels = blockHeight / (24 * 60);
-  console.log(minutePixels, blockHeight);
+    var itemsByDay = {};
+    var minutePixels = blockHeight / (24 * 60);
+    console.log(minutePixels, blockHeight);
 
-  var prevItem = null;
-  var prevItemOffset = 0;
-  var jumpBackTheshold = 4 * 60 * 60 * 1000;
-  var jumpBackStep = 40;
-  var prevPos = 0;
+    var prevItem = null;
+    var prevItemOffset = 0;
+    var jumpBackTheshold = 4 * 60 * 60 * 1000;
+    var jumpBackStep = 40;
+    var prevPos = 0;
 
-  gs
-    .selectAll("rect")
-    .data(function(d) { return rowsByDay.get(d);})
-    .enter()
-    .append("rect")
-    .attr("x", function (d) {
-            // day of the week
-            // var dayOfTheWeek = d.playDate.day();
-            var offset = 0; // dayOfTheWeek * blockWidth;
-            return offset + (blockWidth - blockWidth*d.energy*lineWidthScale) / 2;
-        }) // use horizontalOffset based on the day
+    gs
+        .selectAll("rect")
+        .data(function(d) { return rowsByDay.get(d);})
+        .enter()
+        .append("rect")
+        .attr("x", function (d) {
+                // day of the week
+                // var dayOfTheWeek = d.playDate.day();
+                var offset = 0; // dayOfTheWeek * blockWidth;
+                return offset + (blockWidth - blockWidth*d.energy*lineWidthScale) / 2;
+            }) // use horizontalOffset based on the day
         .attr("y", function (d) {
 
             if (useExactTime) {
@@ -349,4 +362,5 @@ d3.text("assets/files/music.csv", function(text) {
         .enter()
         .append("rect");
 
+    })
 });
