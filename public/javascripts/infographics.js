@@ -22,7 +22,7 @@ function getParameterByName(name) {
 }
 
 var useExactTime = getParameterByName('exacttime') === "true";
-var useColor = getParameterByName('color') === "true";
+var colorSchema = getParameterByName('color');
 
 var svgWidth = 1000,
     svgHeight = 2000,
@@ -197,11 +197,15 @@ d3.text("assets/files/music.csv", function(text) {
     var genres = d3.csv.parseRows(genretext).map(function(row) {
        return {
           genre: row[0],
-          color: "#" + row[1]
+          color: "#" + row[1],
+          higherGenre: row[2]
        }
     });
 
-    console.log(genres);
+    var genresMap = d3.nest()
+        .key(function(d) { return d.genre})
+        .rollup(function(colors) { return colors[0]; }) // this is always one
+        .map(genres, d3.map);
 
     var rows = d3.csv.parseRows(text).map(function(row) {
         var momentDate = moment(row[1], "MMM DD, YYYY at HH:mmA"); // November 04, 2014 at 12:07PM
@@ -240,6 +244,7 @@ d3.text("assets/files/music.csv", function(text) {
 
     var sortedDays = rowsByDay.keys().sort(d3.ascending);
 
+    // these are day blocks, just "g" containers
     var gs = svg
         .selectAll("g.day")
         .data(sortedDays)
@@ -283,6 +288,7 @@ d3.text("assets/files/music.csv", function(text) {
     var jumpBackStep = 40;
     var prevPos = 0;
 
+    //  adding actual bars
     gs
         .selectAll("rect")
         .data(function(d) { return rowsByDay.get(d);})
@@ -351,7 +357,33 @@ d3.text("assets/files/music.csv", function(text) {
             return lineHeight;
         })
         .style("fill", function(d) {
-            return "red";
+            if (colorSchema){
+                if (d.genres.length > 0) {
+                    var firstGenre = d.genres[0];
+                    if (firstGenre === "") {
+                        console.log("no genre for ", d);
+                        return "red";
+                    }
+                    if (!genresMap.get(firstGenre)) {
+                        console.log("no color found for ", firstGenre);
+                        return "red";
+                    }
+
+                    if (colorSchema === "simple") {
+                        console.log(firstGenre, genresMap.get(firstGenre).higherGenre);
+                        firstGenre = genresMap.get(firstGenre).higherGenre;
+                    }
+                    // console.log('"' + firstGenre + '"');
+                    var color = genresMap.get(firstGenre).color;
+                    // console.log(firstGenre, color);
+                    return color;
+                } else {
+                    console.log("no genres for ", d);
+                    return "red";
+                }
+            } else {
+                return "red";
+            }
         });
 
     var itemsByDay = {};
