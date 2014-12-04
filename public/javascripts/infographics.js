@@ -21,7 +21,7 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-var useExactTime = getParameterByName('exacttime') === "true";
+var useExactTime = getParameterByName('exacttime');
 var colorSchema = getParameterByName('color');
 
 var svgWidth = 1000,
@@ -302,7 +302,12 @@ d3.text("assets/files/music.csv", function(text) {
             }) // use horizontalOffset based on the day
         .attr("y", function (d) {
 
-            if (useExactTime) {
+            if (useExactTime === "exact") {
+                var minutesFromBeginningOfDay = d.playDate.hour() * 60  + d.playDate.minute();
+                var hourMinuteOffset = minutePixels * minutesFromBeginningOfDay;
+                return hourMinuteOffset;
+            }
+            else if (useExactTime) {
                 var minMax = minMaxTimeByDay.get(d.groupDay);
                 //console.log(d.sortDay);
                 // here it will be spread across the day
