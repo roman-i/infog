@@ -122,8 +122,26 @@ function startD3() {
                 var horz = 0;
                 var vert = 30 + curVertOffset;
                 curVertOffset = vert;
-                console.log(curVertOffset);
                 return 'translate(' + horz + ',' + vert + ')';
+            })
+            .on('mouseover', function(d){
+
+                var allItems = svg
+                    .selectAll(".item");
+
+                allItems.style("fill-opacity", 0.1);
+
+                var selector = "[genre='"+d.genre+"']";
+                var itemsWithGenre = svg
+                    .selectAll(selector);
+                itemsWithGenre.style("fill-opacity", 1.0);
+                                //item
+            })
+            .on('mouseout', function(d){
+                var allItems = svg
+                    .selectAll(".item");
+
+                allItems.style("fill-opacity", 1.0);
             });
 
         legend.append('rect')
@@ -331,6 +349,7 @@ function startD3() {
             .data(function(d) { return rowsByDay.get(d);})
             .enter()
             .append("rect")
+            .attr("class", "item")
             .attr("x", function (d) {
                     // day of the week
                     // var dayOfTheWeek = d.playDate.day();
@@ -338,7 +357,6 @@ function startD3() {
                     return offset + (blockWidth - blockWidth*d.energy*lineWidthScale) / 2;
                 }) // use horizontalOffset based on the day
             .attr("y", function (d) {
-
                 if (useExactTime === "exact") {
                     var minutesFromBeginningOfDay = d.playDate.hour() * 60  + d.playDate.minute();
                     var hourMinuteOffset = minutePixels * minutesFromBeginningOfDay;
@@ -425,6 +443,13 @@ function startD3() {
                     }
                 } else {
                     return "red";
+                }
+            })
+            .attr("genre", function(d) {
+                if (d.genres.length > 0) {
+                    return d.genres[0];
+                } else {
+                    return "";
                 }
             });
 
