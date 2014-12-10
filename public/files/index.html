@@ -9,22 +9,28 @@
   body{
       
       background-color: black;
-      color:white;
+      color:#E6E7E8;
       font-family: 'Ubuntu', sans-serif;
-      font-weight:300;
-      font-size: 0.8em;
+      font-weight:lighter;
+      font-size: 0.7em;
   }  
     .name{
-    text-align: center;
+    text-align: left;
+    position: absolute;
+    top: 10px;
+    left:50px;
+    line-height: 150%;
     }
     
     .description{
     text-align: left;
     position: absolute;
-    top: 30px;
-    left:200px;
+    top: 40px;
+    left:50px;
+    line-height: 150%;
     }
     
+/*
     .statistics{
     text-align: left;
     position: absolute;
@@ -32,10 +38,11 @@
     right:200px;
     
     }
+*/
     
     ul.weeks {
         position:absolute;
-        top:300px;
+        top:260px;
     }
     
     ul.weeks li{
@@ -56,7 +63,7 @@
     
     ul.days{
     left:120px;
-    top:150px;
+    top:130px;
     position: absolute;
     }
     
@@ -74,21 +81,20 @@
 
 <script type="text/javascript" src="../javascripts/infographics.js">
 </script>
-    <p class="name">my listening habits</p>
-    <p class="description">For the last 6 weeks I tracked all the music that I listened to. <br>I was using EchoNest API to get the data about the energy <br> and the genre of my music. To see the expanded view with <br> details about my music click on a specific day.</p>
+    <p class="name">My listening habits</p>
+    <p class="description">
+        For the last 6 weeks I tracked all the music that I listened to on pandora. <br> I listened to <b> 396 music tracks</b> of <b>41 genres</b>, that is  hours and minutes. <br> To see the expanded view with details about my music click on a specific day.</p>
     
+<!--
     <p class="statistics">  Music source: pandora<br>
 
                             Song amount: 396<br>
 
                             Total song duration: <br>
-
-                            Duration of tracking: 6 weeks<br>
-
-                            Tools: D3.js, Excel, IFTTT.com, EchoNest API, Illustrator<br>
-
+        
                             Genres: 41
     </p>
+-->
     
     
 <ul class="days">

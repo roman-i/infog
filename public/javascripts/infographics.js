@@ -146,14 +146,14 @@ function startD3() {
 
         legend.append('rect')
             .attr('width', 30)
-            .attr('height', 5)
+            .attr('height', 1.5)
             .style('fill', function(d) {
                 return d.color;
             });
 
         legend.append('text')
             .attr('x', 50)
-            .attr('y', 5)
+            .attr('y', 1)
             .attr("fill", "white")
             .text(function(d) {
                 return d.genre;
