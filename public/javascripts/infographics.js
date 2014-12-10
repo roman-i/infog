@@ -154,7 +154,7 @@ function startD3() {
         legend.append('text')
             .attr('x', 50)
             .attr('y', 1)
-            .attr("fill", "white")
+            .attr("fill", "#E6E7E8")
             .text(function(d) {
                 return d.genre;
             });
