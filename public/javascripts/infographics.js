@@ -109,7 +109,7 @@ function startD3() {
         var legendContainer = svg
           .append("g")
           .attr('transform', function(d, i) {
-              return 'translate(850, 0)';
+              return 'translate(850, -20)';
           });
 
         var legend = legendContainer
@@ -120,7 +120,7 @@ function startD3() {
             .attr('class', 'legend')
             .attr('transform', function(d, i) {
                 var horz = 0;
-                var vert = 30 + curVertOffset;
+                var vert = 15 + curVertOffset;
                 curVertOffset = vert;
                 return 'translate(' + horz + ',' + vert + ')';
             })
