@@ -12,9 +12,9 @@ function startD3() {
     var useExactTime = getParameterByName('exacttime');
     var colorSchema = getParameterByName('color');
 
-    var svgWidth = 800,
+    var svgWidth = 1000,
         svgHeight = 1200,
-        blockWidth = svgWidth / 7,
+        blockWidth = (svgWidth - 200) / 7,
         blockHeight = svgHeight / 6
         lineHeight = 1,
         overlayOpacity = 0.7,
@@ -104,6 +104,43 @@ function startD3() {
         toBottom(overlay);
     }
 
+    function addColorsList(colors) {
+        var curVertOffset = 0;
+        var legendContainer = svg
+          .append("g")
+          .attr('transform', function(d, i) {
+              return 'translate(850, 0)';
+          });
+
+        var legend = legendContainer
+            .selectAll(".legend")
+            .data(colors)
+            .enter()
+            .append("g")
+            .attr('class', 'legend')
+            .attr('transform', function(d, i) {
+                var horz = 0;
+                var vert = 30 + curVertOffset;
+                curVertOffset = vert;
+                console.log(curVertOffset);
+                return 'translate(' + horz + ',' + vert + ')';
+            });
+
+        legend.append('rect')
+            .attr('width', 30)
+            .attr('height', 5)
+            .style('fill', function(d) {
+                return d.color;
+            });
+
+        legend.append('text')
+            .attr('x', 50)
+            .attr('y', 5)
+            .attr("fill", "white")
+            .text(function(d) {
+                return d.genre;
+            });
+    }
 
     // draw the backgroud, grid and overlay.
     function drawGrid() {
@@ -204,6 +241,8 @@ function startD3() {
            }
         });
 
+
+
           // convert it to a map, so we can easiry find color by genre name
         var genresMap = d3.nest()
             .key(function(d) { return d.genre})
@@ -226,6 +265,8 @@ function startD3() {
 
 
         drawGrid();
+
+        addColorsList(genres);
 
         rows = rows.sort(function(d) { d.sortDay; })
 
@@ -273,15 +314,6 @@ function startD3() {
                 animateToDay(d);
                 d3.event.stopPropagation();
             });
-
-    //  var gsBg = gs
-    //    .selectAll("rect")
-    //    .enter()
-    //    .append("rect")
-    //    .attr("width", blockWidth+ "")
-    //    .attr("height", blockHeight + "")
-    //    .attr("fill", "white")
-    //    .exit();
 
         var itemsByDay = {};
         var minutePixels = blockHeight / (24 * 60);
