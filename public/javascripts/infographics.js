@@ -105,16 +105,51 @@ function startD3() {
     }
 
     function addColorsList(colors) {
+
+        var genresMap = d3.nest()
+            .key(function(d) { return d.genre})
+            .rollup(function(items) { return items[0]; }) // this is always one
+            .map(colors, d3.map);
+
+//        var higherGenreMap = d3.nest()
+//             .key(function(d) { return d.higherGenre})
+//             .rollup(function(items) { return items }) // this is always one
+//             .map(colors, d3.map);
+
+        var limitedColorsWithDups = colors.map(function(v) {
+            if (v.higherGenre) {
+                // for small genres
+                return {
+                    "genre": v.higherGenre,
+                    "color": genresMap.get(v.higherGenre).color
+                }
+            } else { // for higher colors
+                return {
+                    "genre": v.genre,
+                    "color": v.color
+                }
+            }
+        });
+
+//        // remove dups
+        var limitedColors = d3.nest()
+                    .key(function(d) { return d.genre})
+                    .rollup(function(items) { return items[0]; }) // this is always one
+                    .entries(limitedColorsWithDups)
+                    .map(function(d){
+                        return d.values
+                    });
+
         var curVertOffset = 0;
         var legendContainer = svg
           .append("g")
           .attr('transform', function(d, i) {
-              return 'translate(850, -20)';
+              return 'translate(850, 0)';
           });
 
         var legend = legendContainer
             .selectAll(".legend")
-            .data(colors)
+            .data(limitedColors)
             .enter()
             .append("g")
             .attr('class', 'legend')
@@ -131,7 +166,7 @@ function startD3() {
 
                 allItems.style("fill-opacity", 0.1);
 
-                var selector = "[genre='"+d.genre+"']";
+                var selector = "[hgenre='"+d.genre+"']";
                 var itemsWithGenre = svg
                     .selectAll(selector);
                 itemsWithGenre.style("fill-opacity", 1.0);
@@ -335,7 +370,6 @@ function startD3() {
 
         var itemsByDay = {};
         var minutePixels = blockHeight / (24 * 60);
-        console.log(minutePixels, blockHeight);
 
         var prevItem = null;
         var prevItemOffset = 0;
@@ -364,11 +398,9 @@ function startD3() {
                 }
                 else if (useExactTime) {
                     var minMax = minMaxTimeByDay.get(d.groupDay);
-                    //console.log(d.sortDay);
                     // here it will be spread across the day
                     var minutesFromBeginningOfDay = d.playDate.hour() * 60  + d.playDate.minute() - minMax.min;
                     var hourMinuteOffset = minutePixels * minutesFromBeginningOfDay;
-                    console.log("res->", minutePixels, minutesFromBeginningOfDay, hourMinuteOffset);
                     // prevItemOffset
 
                     var newPos = hourMinuteOffset;
@@ -430,7 +462,7 @@ function startD3() {
                         }
 
                         if (colorSchema === "simple") {
-                            console.log(firstGenre, genresMap.get(firstGenre).higherGenre);
+                            // console.log(firstGenre, genresMap.get(firstGenre).higherGenre);
                             firstGenre = genresMap.get(firstGenre).higherGenre;
                         }
                         // console.log('"' + firstGenre + '"');
@@ -451,7 +483,16 @@ function startD3() {
                 } else {
                     return "";
                 }
+            })
+            .attr("hgenre", function(d) {
+                if (d.genres.length > 0 && d.genres[0] && d.genres[0] != " ") {
+                    console.log("--->", genresMap.get(d.genres[0]))
+                    return genresMap.get(d.genres[0]).higherGenre;
+                } else {
+                    return "";
+                }
             });
+
 
         var itemsByDay = {};
 
