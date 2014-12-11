@@ -583,7 +583,6 @@ function startD3() {
             })
             .attr("hgenre", function(d) {
                 if (d.genres.length > 0 && d.genres[0] && d.genres[0] != " ") {
-                    console.log("--->", genresMap.get(d.genres[0]))
                     return genresMap.get(d.genres[0]).higherGenre;
                 } else {
                     return "";
