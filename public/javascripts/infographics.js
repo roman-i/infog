@@ -104,6 +104,76 @@ function startD3() {
         toBottom(overlay);
     }
 
+    function addBpmLegend() {
+        var data = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9];
+
+        var legendContainer = svg
+              .append("g")
+              .attr('transform', function(d, i) {
+                  return 'translate(850, 0)';
+              });
+
+        var curHorizOffset = 0;
+        var barHeight = 50;
+        var barPadding = 10;
+
+        var legend = legendContainer
+            .selectAll(".bpmLegend")
+            .data(data)
+            .enter()
+            .append("g")
+            .attr('class', 'bpmLegend')
+            .attr('transform', function(d, i) {
+                var horz = barPadding + curHorizOffset;
+                var vert = 10;
+                curHorizOffset = horz;
+                return 'translate(' + horz + ',' + vert + ')';
+            });
+
+        legend.append('rect')
+            .attr('width', 1.5)
+            .attr('height', function(d) {
+                return barHeight * d;
+            })
+            .attr("y", function(d) {
+                return barHeight * (1-d);
+            })
+            .style('fill', "white");
+
+
+         // "energy" title
+         legendContainer
+             .append("text")
+             .attr('x', 40)
+             .attr('y', 10)
+             .attr("fill", "white")
+             .text("energy");
+
+        // start and end marks
+        legendContainer
+           .append("text")
+           .attr('x', 0)
+           .attr('y', barHeight + 30)
+           .attr("fill", "white")
+           .text("0.1");
+
+        legendContainer
+           .append("text")
+           .attr('x', 80)
+           .attr('y', barHeight + 30)
+           .attr("fill", "white")
+           .text("0.9");
+//
+//        legend.append('text')
+//            .attr('x', 50)
+//            .attr('y', 1)
+//            .attr("fill", "#E6E7E8")
+//            .text(function(d) {
+//                return d;
+//            });
+
+    }
+
     function addColorsList(colors) {
 
         var genresMap = d3.nest()
@@ -131,7 +201,7 @@ function startD3() {
             }
         });
 
-//        // remove dups
+        // remove dups
         var limitedColors = d3.nest()
                     .key(function(d) { return d.genre})
                     .rollup(function(items) { return items[0]; }) // this is always one
@@ -140,44 +210,64 @@ function startD3() {
                         return d.values
                     });
 
-        var curVertOffset = 0;
+        var curVertOffset = 15; // to give some space for a header
         var legendContainer = svg
           .append("g")
           .attr('transform', function(d, i) {
-              return 'translate(850, 0)';
+              return 'translate(850, 100)';
           });
+
+        // "genres" title
+        legendContainer
+            .append("text")
+            .attr('x', 50)
+            .attr('y', 10)
+            .attr("fill", "white")
+            .text("genres");
 
         var legend = legendContainer
             .selectAll(".legend")
             .data(limitedColors)
             .enter()
             .append("g")
-            .attr('class', 'legend')
+            .attr('class', 'legend item')
+            .attr('hgenre', function(d) {return d.genre;})
             .attr('transform', function(d, i) {
                 var horz = 0;
                 var vert = 15 + curVertOffset;
                 curVertOffset = vert;
                 return 'translate(' + horz + ',' + vert + ')';
             })
-            .on('mouseover', function(d){
+            .on('click', function(d){
 
                 var allItems = svg
                     .selectAll(".item");
 
-                allItems.style("fill-opacity", 0.1);
+
+                if (d.isSelected || false) {
+                    d.isSelected = false;
+                    allItems.style("fill-opacity", 1.0);
+                    return;
+                }
+
+
+                allItems.style("fill-opacity", 0.12);
 
                 var selector = "[hgenre='"+d.genre+"']";
                 var itemsWithGenre = svg
                     .selectAll(selector);
                 itemsWithGenre.style("fill-opacity", 1.0);
-                                //item
-            })
-            .on('mouseout', function(d){
-                var allItems = svg
-                    .selectAll(".item");
 
-                allItems.style("fill-opacity", 1.0);
+                d.isSelected = true;
+                                //item
             });
+//
+//            .on('mouseout', function(d){
+//                var allItems = svg
+//                    .selectAll(".item");
+//
+//                allItems.style("fill-opacity", 1.0);
+//            });
 
         legend.append('rect')
             .attr('width', 30)
@@ -244,9 +334,9 @@ function startD3() {
     function getBlockCoordByDate(date) {
         var momDate = moment(date, "YYYYMMDD");
 
-        var weekOffset = momDate.week() - smallestWeek;
+        var weekOffset = momDate.isoWeeks() - smallestWeek;
 
-        var dayOffset = momDate.day()
+        var dayOffset = monToSunDay(momDate);
 
         return [dayOffset, weekOffset];
     }
@@ -255,9 +345,14 @@ function startD3() {
     function getDayOfWeek(date) {
         var momDate = moment(date, "YYYYMMDD");
 
-        var dayOffset = momDate.day()
+        var dayOffset = monToSunDay(momDate);
 
         return dayOffset;
+    }
+
+    function monToSunDay(momentdt) {
+        var day = momentdt.isoWeekday() - 1; // it will be Mon - Sun
+        return day;
     }
 
 
@@ -321,10 +416,12 @@ function startD3() {
 
         addColorsList(genres);
 
+        addBpmLegend();
+
         rows = rows.sort(function(d) { d.sortDay; })
 
         // it is global
-        smallestWeek = d3.min(rows, function(d) {return d.playDate.week();});
+        smallestWeek = d3.min(rows, function(d) {return d.playDate.isoWeeks();});
 
         var rowsByDay = d3
             .nest()
