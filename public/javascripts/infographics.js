@@ -22,6 +22,8 @@ function startD3() {
         lineWidthScale = 0.3,
         verticalPadding = 20;
 
+    var minutePixels = blockHeight / (24 * 60);
+
     var smallestWeek;  // global
     var selectedDay;
 
@@ -31,6 +33,8 @@ function startD3() {
         .append("svg")
         .attr("width", svgWidth)
         .attr("height", svgHeight);
+
+    var zoomedIn = false;
 
     // moves element of svg to the bottom (under all elements)
     function toBottom(elem, position) {
@@ -49,59 +53,51 @@ function startD3() {
 
     // zoom in to specific day
     function animateToDay(day) {
-        var selector = "[day='"+day+"']";
-        var dayG = svg
-            .select(selector);
-    //        .attr("transform", function(d) {
-    //            var curG = d3.select(this);
-    //            var currentCoords = curG.attr("transform").replace("translate", "").replace("(", "").replace(")", "").split(",");
-    //            var curX = parseFloat(currentCoords[0].replace(" ", ""));
-    //            var curY = parseFloat(currentCoords[1].replace(" ", ""));
-    //            curG.attr("oldY", curY);
-    //            return "translate("+curX+", 0)";
-            //});
-        selectedDay = day;
+        if (zoomedIn) {
+            zoomedIn = false;
+            var dayG = svg.select("[day='"+selectedDay+"']");
+            var allItems = svg.selectAll(".item");
 
-        // svg.appendChild(overlay);
+            allItems.style("fill-opacity", 1.0);
 
-        var overlay = svg.select(".overlay"); //.remove();
-        toTop(overlay);
-        toTop(dayG); // put day even on top of it
+            dayG
+                .selectAll(".item")
+                .transition()
+                .duration(1000)
+                .attr("y", function(d) {
+                    return d3.select(this).attr("stacked_y");
+                });
 
-        var dayOfWeek = getDayOfWeek(day);
-    //    var verticalSelector = "[dayOfWeek='"+dayOfWeek+"']";
-    //    var allDaysOfWeek = svg
-    //        .select(verticalSelector)
-    //        .attr("transform", "translate(100, 100)");
+            svg.select(".day_scale").style("fill-opacity", 0.0);
+        } else {
+            var dayG = svg.select("[day='"+day+"']");
+            selectedDay = day;
 
-    //    .each(function() {
-    //        d3.select(this).bringToFront();
-    //    })
-        // overlay.each(bringToFront();
+            var dayOfWeek = getDayOfWeek(day);
 
-        // console.log(selectedDay);
+            var allItems = svg.selectAll(".item");
+
+            allItems.style("fill-opacity", 0.12);
+
+            dayG
+                .selectAll(".item")
+                .style("fill-opacity", 1.0)
+                .transition()
+                .duration(1000)
+                .attr("y", function(d) {
+                    return d3.select(this).attr("exact_y");
+                });
+
+            zoomedIn = true;
+            svg
+                .select(".day_scale")
+                .style("fill-opacity", 1.0)
+                .attr('transform', function(d, i) {
+                    return dayG.attr("transform");
+                });
+        }
+
         return;
-    }
-
-    // zoom out (not complete yet)
-    function animateBack() {
-        if (!selectedDay) {return;} // just to prevent some dbl clicks
-        var selector = "[day='"+selectedDay+"']";
-        selectedDay = null;
-        var dayG = svg
-            .select(selector);
-    //        .attr("transform", function(d) {
-    //            var curG = d3.select(this);
-    //            var currentCoords = curG.attr("transform").replace("translate", "").replace("(", "").replace(")", "").split(",");
-    //            var curX = parseFloat(currentCoords[0].replace(" ", ""));
-    //            var curY = parseFloat(currentCoords[1].replace(" ", ""));
-    //            var oldY = curG.attr("oldY");
-    //            return "translate("+curX+", "+oldY+")";
-    //        });
-
-        var overlay = svg.select(".overlay"); //.remove();
-        toBottom(dayG, 2); // comes before overlay, because overlay should come below
-        toBottom(overlay);
     }
 
     function addBpmLegend() {
@@ -314,20 +310,33 @@ function startD3() {
             .attr("stroke-width", 1)
             .attr("stroke", "white");
         }
+    }
 
-        // overlay, should be separate from the grid
-        svg
-            .append("rect")
-            .attr("class", "overlay")
-            .attr("fill", "black")
-            .attr("width", "100%")
-            .attr("height", "100%")
-            .attr("fill-opacity", overlayOpacity + "")
-            .on("click", function(d) {
-                animateBack();
-                d3.event.stopPropagation();
-            });
+    function createDayScale() {
+        var day_scale = svg
+            .append("svg:g")
+            .attr("class", "day_scale");
 
+        day_scale
+            .append('text')
+            .attr('x', 0)
+            .attr('y', 10)
+            .attr("fill", "#E6E7E8")
+            .text("7am");
+
+        day_scale
+            .append('text')
+            .attr('x', 0)
+            .attr('y', blockHeight / 3)
+            .attr("fill", "#E6E7E8")
+            .text("12pm");
+
+        day_scale
+            .append('text')
+            .attr('x', 0)
+            .attr('y', blockHeight)
+            .attr("fill", "#E6E7E8")
+            .text("12am");
     }
 
     // helper function to calculate something
@@ -420,6 +429,9 @@ function startD3() {
 
         rows = rows.sort(function(d) { d.sortDay; })
 
+
+        createDayScale();
+
         // it is global
         smallestWeek = d3.min(rows, function(d) {return d.playDate.isoWeeks();});
 
@@ -466,7 +478,6 @@ function startD3() {
             });
 
         var itemsByDay = {};
-        var minutePixels = blockHeight / (24 * 60);
 
         var prevItem = null;
         var prevItemOffset = 0;
@@ -487,13 +498,13 @@ function startD3() {
                     var offset = 0; // dayOfTheWeek * blockWidth;
                     return offset + (blockWidth - blockWidth*d.energy*lineWidthScale) / 2;
                 }) // use horizontalOffset based on the day
-            .attr("y", function (d) {
-                if (useExactTime === "exact") {
-                    var minutesFromBeginningOfDay = d.playDate.hour() * 60  + d.playDate.minute();
-                    var hourMinuteOffset = minutePixels * minutesFromBeginningOfDay;
-                    return hourMinuteOffset;
-                }
-                else if (useExactTime) {
+            .attr("exact_y", function(d) {
+                var minutesFromBeginningOfDay = (d.playDate.hour() - 7) * 60  + d.playDate.minute();
+                var hourMinuteOffset = minutePixels * minutesFromBeginningOfDay;
+                return hourMinuteOffset;
+            })
+            .attr("stacked_y", function (d) {
+                if (useExactTime) {
                     var minMax = minMaxTimeByDay.get(d.groupDay);
                     // here it will be spread across the day
                     var minutesFromBeginningOfDay = d.playDate.hour() * 60  + d.playDate.minute() - minMax.min;
@@ -539,6 +550,9 @@ function startD3() {
                     return stackOffset + curItemsOffset + verticalPadding;
                 }
             })   // use vertical offset based on the week.
+            .attr("y", function (d) {
+                return d3.select(this).attr("stacked_y");
+            })
             .attr("width", function (d) {
                 return d.energy * blockWidth * lineWidthScale;
             })
@@ -599,6 +613,8 @@ function startD3() {
             .append("rect");
 
         })
+
+
     });
 
 }
