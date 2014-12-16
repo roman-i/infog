@@ -9,45 +9,41 @@
   body{
       
       background-color: black;
-      color:#E6E7E8;
+      color:#A7A9AB;
       font-family: 'Ubuntu', sans-serif;
       font-weight:lighter;
       font-size: 0.7em;
   }  
     .name{
     text-align: left;
-    position: absolute;
+/*    position: absolute;*/
+    color:white;
+/*
     top: 10px;
     left:50px;
+*/
     line-height: 150%;
     }
     
     .description{
     text-align: left;
+/*
     position: absolute;
     top: 40px;
     left:50px;
+*/
     line-height: 150%;
     }
     
-/*
-    .statistics{
-    text-align: left;
-    position: absolute;
-    top: 30px;
-    right:200px;
-    
-    }
-*/
     
     ul.weeks {
         position:absolute;
-        top:260px;
+        top:200px;
     }
     
     ul.weeks li{
     width:45px;
-    height: 195px;
+    height: 140px;
     list-style: none;
     text-align:left;
     
@@ -55,46 +51,48 @@
     
     ul.days li{
     float:left;
-    width:113.5px;
+    width:99px;
     list-style: none;
     display: inline;
     
     }
     
+
     ul.days{
+/*
     left:120px;
     top:130px;
     position: absolute;
+*/
+        
+        padding-top:30px;
+        padding-left: 150px;
     }
+
     
     .svgcont{
     margin-left: 100px;
-    margin-top:150px;
+    margin-top:30px;
     
     }
     
+    .container {
+    width:1000px;
+    margin: 0 auto;
+    }
     
     </style>
     
-    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
 
 <script type="text/javascript" src="../javascripts/infographics.js">
 </script>
+    
+    <div class="container">
     <p class="name">My listening habits</p>
     <p class="description">
         For the last 6 weeks I tracked all the music that I listened to on pandora. <br> I listened to <b> 396 music tracks</b> of <b>41 genres</b>, that is  hours and minutes. <br> To see the expanded view with details about my music click on a specific day.</p>
-    
-<!--
-    <p class="statistics">  Music source: pandora<br>
-
-                            Song amount: 396<br>
-
-                            Total song duration: <br>
-        
-                            Genres: 41
-    </p>
--->
     
     
 <ul class="days">
@@ -118,10 +116,9 @@
      <li>week 6</li>
 </ul>
     
-    <div class="svgcont">
-    
+    <div class="svgcont"></div>
+        
     </div>
-    
     
 </body>
 </html>

@@ -4,27 +4,27 @@ function startD3() {
 
     var svgWidth = 1000, // total width of our SVG
         // total height of the SVG
-        svgHeight = 1200,
+        svgHeight = 850,
 
         // this is a day block, we have 7 days + some space at the right for legend. that's why we subtract and then divide
-        blockWidth = (svgWidth - 200) / 7,
+        blockWidth = (svgWidth - 300) / 7,
         // we have 6 weeks, so we are just dividing total height to 6
         blockHeight = svgHeight / 6
 
         // height of the single item (song)
-        lineHeight = 1,
+        lineHeight = 1.8,
 
         // spacing between items mentioned above
-        divider = 3,
+        divider = 1,
 
         // width of the line, so if energy is 1.0 and this lineWidthScale=0.3 then the width of the bar will be 0.3 of day block width
         lineWidthScale = 0.3,
 
         // vertical padding in a day (so the total spacing between 2 days would be verticalPadding * 2)
-        verticalPadding = 20,
+        verticalPadding = 50,
 
         // we have horizontal grid (currently black)
-        horizontalLineHeight = 30,
+        horizontalLineHeight = 20,
 
         // color of horizontal lines
         horizontalLineColor = "black",
@@ -36,26 +36,26 @@ function startD3() {
         verticalLineColor = "white",
 
         // width of the vertical lines in a grid
-        verticalLineWidth = "1",
+        verticalLineWidth = "0.7",
 
         // we have a list of genres at the right, this is a text color for it
-        genreTitleColor = "#E6E7E8",
+        genreTitleColor = "#A7A9AB",
 
         // that is left padding for genre titles (probably shouldn't be smaller than genre line width)
         genreTitleLeftPadding = "50",
 
         // vertical padding for genre title
-        genreTitleTopPadding = "1",
+        genreTitleTopPadding = "1.2",
 
         // when you click on a day it does a transition and the scale appears, this is the color for the text on this scale
         dayLegendTextColor = "#E6E7E8",
 
         // absolute position for genres list
-        genresListLeft = "850",
-        genresListTop = "100",
+        genresListLeft = "750",
+        genresListTop = "120",
 
         // when something is highlighted everything else gets this opacity
-        opacityOfAllItemsWhenSomethingSelected = "0.12",
+        opacityOfAllItemsWhenSomethingSelected = "0.25",
 
         // we have energy legend on the right, this is the color we use
         energyLegendColor = "white";
