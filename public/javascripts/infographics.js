@@ -2,25 +2,63 @@ function startD3() {
     
     var csvLocation = "";
 
-    function getParameterByName(name) {
-        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-            results = regex.exec(location.search);
-        return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-    }
-
-    var useExactTime = getParameterByName('exacttime');
-    var colorSchema = getParameterByName('color');
-
-    var svgWidth = 1000,
+    var svgWidth = 1000, // total width of our SVG
+        // total height of the SVG
         svgHeight = 1200,
+
+        // this is a day block, we have 7 days + some space at the right for legend. that's why we subtract and then divide
         blockWidth = (svgWidth - 200) / 7,
+        // we have 6 weeks, so we are just dividing total height to 6
         blockHeight = svgHeight / 6
+
+        // height of the single item (song)
         lineHeight = 1,
-        overlayOpacity = 0.7,
+
+        // spacing between items mentioned above
         divider = 3,
+
+        // width of the line, so if energy is 1.0 and this lineWidthScale=0.3 then the width of the bar will be 0.3 of day block width
         lineWidthScale = 0.3,
-        verticalPadding = 20;
+
+        // vertical padding in a day (so the total spacing between 2 days would be verticalPadding * 2)
+        verticalPadding = 20,
+
+        // we have horizontal grid (currently black)
+        horizontalLineHeight = 30,
+
+        // color of horizontal lines
+        horizontalLineColor = "black",
+
+        // background color
+        backgroundColor = "black",
+
+        // we have vertical lines in our grid, that the color
+        verticalLineColor = "white",
+
+        // width of the vertical lines in a grid
+        verticalLineWidth = "1",
+
+        // we have a list of genres at the right, this is a text color for it
+        genreTitleColor = "#E6E7E8",
+
+        // that is left padding for genre titles (probably shouldn't be smaller than genre line width)
+        genreTitleLeftPadding = "50",
+
+        // vertical padding for genre title
+        genreTitleTopPadding = "1",
+
+        // when you click on a day it does a transition and the scale appears, this is the color for the text on this scale
+        dayLegendTextColor = "#E6E7E8",
+
+        // absolute position for genres list
+        genresListLeft = "850",
+        genresListTop = "100",
+
+        // when something is highlighted everything else gets this opacity
+        opacityOfAllItemsWhenSomethingSelected = "0.12",
+
+        // we have energy legend on the right, this is the color we use
+        energyLegendColor = "white";
 
     var minutePixels = blockHeight / (24 * 60);
 
@@ -77,7 +115,7 @@ function startD3() {
 
             var allItems = svg.selectAll(".item");
 
-            allItems.style("fill-opacity", 0.12);
+            allItems.style("fill-opacity", opacityOfAllItemsWhenSomethingSelected);
 
             dayG
                 .selectAll(".item")
@@ -134,7 +172,7 @@ function startD3() {
             .attr("y", function(d) {
                 return barHeight * (1-d);
             })
-            .style('fill', "white");
+            .style('fill', energyLegendColor);
 
 
          // "energy" title
@@ -142,7 +180,7 @@ function startD3() {
              .append("text")
              .attr('x', 40)
              .attr('y', 10)
-             .attr("fill", "white")
+             .attr("fill", energyLegendColor)
              .text("energy");
 
         // start and end marks
@@ -150,23 +188,15 @@ function startD3() {
            .append("text")
            .attr('x', 0)
            .attr('y', barHeight + 30)
-           .attr("fill", "white")
+           .attr("fill", energyLegendColor)
            .text("0.1");
 
         legendContainer
            .append("text")
            .attr('x', 80)
            .attr('y', barHeight + 30)
-           .attr("fill", "white")
+           .attr("fill", energyLegendColor)
            .text("0.9");
-//
-//        legend.append('text')
-//            .attr('x', 50)
-//            .attr('y', 1)
-//            .attr("fill", "#E6E7E8")
-//            .text(function(d) {
-//                return d;
-//            });
 
     }
 
@@ -177,22 +207,17 @@ function startD3() {
             .rollup(function(items) { return items[0]; }) // this is always one
             .map(colors, d3.map);
 
-//        var higherGenreMap = d3.nest()
-//             .key(function(d) { return d.higherGenre})
-//             .rollup(function(items) { return items }) // this is always one
-//             .map(colors, d3.map);
-
         var limitedColorsWithDups = colors.map(function(v) {
             if (v.higherGenre) {
                 // for small genres
                 return {
-                    "genre": v.higherGenre,
-                    "color": genresMap.get(v.higherGenre).color
+                    genre: v.higherGenre,
+                    color: genresMap.get(v.higherGenre).color
                 }
             } else { // for higher colors
                 return {
-                    "genre": v.genre,
-                    "color": v.color
+                    genre: v.genre,
+                    color: v.color
                 }
             }
         });
@@ -210,13 +235,13 @@ function startD3() {
         var legendContainer = svg
           .append("g")
           .attr('transform', function(d, i) {
-              return 'translate(850, 100)';
+              return 'translate('+ genresListLeft +', ' + genresListTop + ')';
           });
 
         // "genres" title
         legendContainer
             .append("text")
-            .attr('x', 50)
+            .attr('x', genreTitleLeftPadding)
             .attr('y', 10)
             .attr("fill", "white")
             .text("genres");
@@ -247,7 +272,7 @@ function startD3() {
                 }
 
 
-                allItems.style("fill-opacity", 0.12);
+                allItems.style("fill-opacity", opacityOfAllItemsWhenSomethingSelected);
 
                 var selector = "[hgenre='"+d.genre+"']";
                 var itemsWithGenre = svg
@@ -257,13 +282,6 @@ function startD3() {
                 d.isSelected = true;
                                 //item
             });
-//
-//            .on('mouseout', function(d){
-//                var allItems = svg
-//                    .selectAll(".item");
-//
-//                allItems.style("fill-opacity", 1.0);
-//            });
 
         legend.append('rect')
             .attr('width', 30)
@@ -273,9 +291,9 @@ function startD3() {
             });
 
         legend.append('text')
-            .attr('x', 50)
-            .attr('y', 1)
-            .attr("fill", "#E6E7E8")
+            .attr('x', genreTitleLeftPadding)
+            .attr('y', genreTitleTopPadding)
+            .attr("fill", genreTitleColor)
             .text(function(d) {
                 return d.genre;
             });
@@ -283,23 +301,24 @@ function startD3() {
 
     // draw the backgroud, grid and overlay.
     function drawGrid() {
-        // black background
         var gridContainer = svg.append("svg:g");
 
+        // black background
         gridContainer.append("rect")
             .attr("width", "100%")
             .attr("height", "100%")
-            .attr("fill", "black");
+            .attr("fill", backgroundColor);
 
+        // draw horizontal and vertical lines
         for (var i = 0; i < 7; i++) {
-           // horizontal
+           // horizontal lines are black
            svg.append("line")
             .attr("x1", 0)
             .attr("y1", i * blockHeight)
             .attr("x2", svgWidth)
             .attr("y2", i * blockHeight)
-            .attr("stroke-width", 30)
-            .attr("stroke", "black");
+            .attr("stroke-width", horizontalLineHeight)
+            .attr("stroke", horizontalLineColor);
 
           // vertical lines
           gridContainer.append("line")
@@ -307,35 +326,39 @@ function startD3() {
             .attr("y1", 0)
             .attr("x2", (i + .5) * blockWidth)
             .attr("y2", svgHeight)
-            .attr("stroke-width", 1)
-            .attr("stroke", "white");
+            .attr("stroke-width", verticalLineWidth)
+            .attr("stroke", verticalLineColor);
         }
     }
 
+    // this draws 7am - 12pm - 12pm scale when you select specific day
     function createDayScale() {
         var day_scale = svg
             .append("svg:g")
             .attr("class", "day_scale");
 
+        // this draws 7am mark. it is at the top of the day block
         day_scale
             .append('text')
             .attr('x', 0)
             .attr('y', 10)
-            .attr("fill", "#E6E7E8")
+            .attr("fill", dayLegendTextColor)
             .text("7am");
 
+        // this draws 12pm mark. it is located at 1/3 of the total height
         day_scale
             .append('text')
             .attr('x', 0)
             .attr('y', blockHeight / 3)
-            .attr("fill", "#E6E7E8")
+            .attr("fill", dayLegendTextColor)
             .text("12pm");
 
+        // this draws 12am mark. it is at the bottom of the day block
         day_scale
             .append('text')
             .attr('x', 0)
             .attr('y', blockHeight)
-            .attr("fill", "#E6E7E8")
+            .attr("fill", dayLegendTextColor)
             .text("12am");
     }
 
@@ -363,24 +386,6 @@ function startD3() {
         var day = momentdt.isoWeekday() - 1; // it will be Mon - Sun
         return day;
     }
-
-
-    /*
-    rect.on("click", function() {
-    alert("rect");
-    d3.event.stopPropagation();
-    });
-    svg.on("click", function() { alert("svg"); });
-    */
-
-    // draw grid, horizontal first
-
-
-
-
-
-
-
 
     // load music file first
     d3.text(csvLocation + "music.csv", function(text) {
@@ -479,12 +484,6 @@ function startD3() {
 
         var itemsByDay = {};
 
-        var prevItem = null;
-        var prevItemOffset = 0;
-        var jumpBackTheshold = 4 * 60 * 60 * 1000;
-        var jumpBackStep = 40;
-        var prevPos = 0;
-
         //  adding actual bars
         gs
             .selectAll("rect")
@@ -504,51 +503,17 @@ function startD3() {
                 return hourMinuteOffset;
             })
             .attr("stacked_y", function (d) {
-                if (useExactTime) {
-                    var minMax = minMaxTimeByDay.get(d.groupDay);
-                    // here it will be spread across the day
-                    var minutesFromBeginningOfDay = d.playDate.hour() * 60  + d.playDate.minute() - minMax.min;
-                    var hourMinuteOffset = minutePixels * minutesFromBeginningOfDay;
-                    // prevItemOffset
+                // here we just stack then one on top of another
+                var numberOfRows = rowsByDay.get(d.groupDay).length;
+                var totalSpaceRequired = (lineHeight + divider) * numberOfRows;
+                var spaceLeft = blockHeight - 2*verticalPadding - totalSpaceRequired;
+                var stackOffset = spaceLeft / 2;
 
-                    var newPos = hourMinuteOffset;
-                    if (prevItem) {
-                        if (prevItem.groupDay === d.groupDay) {
-                            if ((d.playDate.valueOf() - prevItem.playDate.valueOf() < jumpBackTheshold)) {
-                                newPos = prevPos + divider*2;
-                                if (d.groupDay === '20141024') {
-                                    console.log("using divider", d.sortDay, prevPos, newPos);
-                                }
-                            }
-                            else {
-                                newPos -= jumpBackStep;
-                            }
-                        } else {
-                            prevPos = 0;
-                        }
-                    }
-
-                    prevItem = d;
-                    prevPos = newPos;
-
-                    if (d.groupDay === '20141024') {
-                        console.log(d.sortDay, newPos, prevPos);
-                    }
-
-                    return newPos + verticalPadding;
-                } else {
-                    // here we just stack then one on top of another
-                    var numberOfRows = rowsByDay.get(d.groupDay).length;
-                    var totalSpaceRequired = (lineHeight + divider) * numberOfRows;
-                    var spaceLeft = blockHeight - 2*verticalPadding - totalSpaceRequired;
-                    var stackOffset = spaceLeft / 2;
-
-                    // already taken by others offset
-                    var curItems = itemsByDay[d.groupDay] || 0;
-                    var curItemsOffset = curItems * (lineHeight + divider);
-                    itemsByDay[d.groupDay] = ++curItems;
-                    return stackOffset + curItemsOffset + verticalPadding;
-                }
+                // already taken by others offset
+                var curItems = itemsByDay[d.groupDay] || 0;
+                var curItemsOffset = curItems * (lineHeight + divider);
+                itemsByDay[d.groupDay] = ++curItems;
+                return stackOffset + curItemsOffset + verticalPadding;
             })   // use vertical offset based on the week.
             .attr("y", function (d) {
                 return d3.select(this).attr("stacked_y");
@@ -560,32 +525,23 @@ function startD3() {
                 return lineHeight;
             })
             .style("fill", function(d) {
-                if (colorSchema){
-                    if (d.genres.length > 0) {
-                        var firstGenre = d.genres[0];
-                        if (firstGenre === "") {
-                            console.log("no genre for ", d);
-                            return "red";
-                        }
-                        if (!genresMap.get(firstGenre)) {
-                            console.log("no color found for ", firstGenre);
-                            return "red";
-                        }
-
-                        if (colorSchema === "simple") {
-                            // console.log(firstGenre, genresMap.get(firstGenre).higherGenre);
-                            firstGenre = genresMap.get(firstGenre).higherGenre;
-                        }
-                        // console.log('"' + firstGenre + '"');
-                        var color = genresMap.get(firstGenre).color;
-                        // console.log(firstGenre, color);
-                        return color;
-                    } else {
-                        console.log("no genres for ", d);
-                        return "red";
+                if (d.genres.length > 0) {
+                    var firstGenre = d.genres[0];
+                    if (firstGenre === "") {
+                        console.log("no genre for ", d);
+                        return "black";
                     }
+                    if (!genresMap.get(firstGenre)) {
+                        console.log("no color found for ", firstGenre);
+                        return "black";
+                    }
+
+                    firstGenre = genresMap.get(firstGenre).higherGenre;
+                    var color = genresMap.get(firstGenre).color;
+                    return color;
                 } else {
-                    return "red";
+                    console.log("no genres for ", d);
+                    return "black";
                 }
             })
             .attr("genre", function(d) {
