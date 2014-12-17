@@ -4,7 +4,7 @@ function startD3() {
 
     var svgWidth = 1000, // total width of our SVG
         // total height of the SVG
-        svgHeight = 850,
+        svgHeight = 750,
 
         // this is a day block, we have 7 days + some space at the right for legend. that's why we subtract and then divide
         blockWidth = (svgWidth - 300) / 7,
@@ -15,7 +15,7 @@ function startD3() {
         lineHeight = 1.8,
 
         // spacing between items mentioned above
-        divider = 1,
+        divider = 0.5,
 
         // width of the line, so if energy is 1.0 and this lineWidthScale=0.3 then the width of the bar will be 0.3 of day block width
         lineWidthScale = 0.3,
