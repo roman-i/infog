@@ -70,7 +70,16 @@ function startD3() {
         .select(".svgcont")
         .append("svg")
         .attr("width", svgWidth)
-        .attr("height", svgHeight);
+        .attr("height", svgHeight)
+        .attr("viewBox", "0 0 " + svgWidth + " " + svgHeight)
+        .attr("preserveAspectRatio", "xMidYMid");
+
+    var aspect = svgWidth / svgHeight;
+
+//    function updateWindow(e){
+//        svg.attr("width", window.innerWidth).attr("height", window.innerHeight);
+//    }
+//    window.onresize = updateWindow;
 
     var zoomedIn = false;
 
