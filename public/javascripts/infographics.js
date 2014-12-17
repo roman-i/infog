@@ -55,7 +55,7 @@ function startD3() {
         genresListTop = "120",
 
         // when something is highlighted everything else gets this opacity
-        opacityOfAllItemsWhenSomethingSelected = "0.25",
+        opacityOfAllItemsWhenSomethingSelected = "0.15",
 
         // we have energy legend on the right, this is the color we use
         energyLegendColor = "white";
