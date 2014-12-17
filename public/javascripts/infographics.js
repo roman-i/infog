@@ -52,7 +52,7 @@ function startD3() {
 
         // absolute position for genres list
         genresListLeft = "750",
-        genresListTop = "120",
+        genresListTop = "100",
 
         // when something is highlighted everything else gets this opacity
         opacityOfAllItemsWhenSomethingSelected = "0.15",
@@ -144,10 +144,10 @@ function startD3() {
         var legendContainer = svg
               .append("g")
               .attr('transform', function(d, i) {
-                  return 'translate(850, 0)';
+                  return 'translate(800, 0)';
               });
 
-        var curHorizOffset = 0;
+        var vertOffset = 0;
         var barHeight = 50;
         var barPadding = 10;
 
@@ -156,21 +156,20 @@ function startD3() {
             .data(data)
             .enter()
             .append("g")
-            .attr('class', 'bpmLegend')
-            .attr('transform', function(d, i) {
-                var horz = barPadding + curHorizOffset;
-                var vert = 10;
-                curHorizOffset = horz;
-                return 'translate(' + horz + ',' + vert + ')';
-            });
+            .attr('class', 'bpmLegend');
+
+        var pyramidShift = 25;
 
         legend.append('rect')
-            .attr('width', 1.5)
-            .attr('height', function(d) {
-                return barHeight * d;
+            .attr('width', function(d) {
+               return barHeight * (1 - d);
             })
+            .attr('height', 1.5)
             .attr("y", function(d) {
-                return barHeight * (1-d);
+                return pyramidShift + barHeight * (1-d);
+            })
+            .attr("x", function(d) {
+                return -barHeight * ((1-d)/2);
             })
             .style('fill', energyLegendColor);
 
@@ -178,7 +177,7 @@ function startD3() {
          // "energy" title
          legendContainer
              .append("text")
-             .attr('x', 40)
+             .attr('x', 0)
              .attr('y', 10)
              .attr("fill", energyLegendColor)
              .text("energy");
@@ -186,15 +185,15 @@ function startD3() {
         // start and end marks
         legendContainer
            .append("text")
-           .attr('x', 0)
-           .attr('y', barHeight + 30)
+           .attr('y', pyramidShift+5)
+           .attr('x', 30)
            .attr("fill", energyLegendColor)
            .text("0.1");
 
         legendContainer
            .append("text")
-           .attr('x', 80)
-           .attr('y', barHeight + 30)
+           .attr('x', 30)
+           .attr('y', 80)
            .attr("fill", energyLegendColor)
            .text("0.9");
 
