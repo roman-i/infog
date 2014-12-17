@@ -12,7 +12,7 @@ function startD3() {
         blockHeight = svgHeight / 6
 
         // height of the single item (song)
-        lineHeight = 1.8,
+        lineHeight = 2,
 
         // spacing between items mentioned above
         divider = 0.5,
