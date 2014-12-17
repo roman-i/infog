@@ -335,7 +335,8 @@ function startD3() {
     function createDayScale() {
         var day_scale = svg
             .append("svg:g")
-            .attr("class", "day_scale");
+            .attr("class", "day_scale")
+            .style("fill-opacity", 0.0);
 
         // this draws 7am mark. it is at the top of the day block
         day_scale
