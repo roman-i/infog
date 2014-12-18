@@ -434,6 +434,10 @@ function startD3() {
             }
         });
 
+        var rows = rows.filter(function (d) {
+            return d.playDate.hour() > 3;
+        });
+
 
         drawGrid();
 
