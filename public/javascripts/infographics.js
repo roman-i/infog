@@ -445,7 +445,7 @@ function startD3() {
 
         addBpmLegend();
 
-        rows = rows.sort(function(d) { d.sortDay; })
+        // rows = rows.sort(function(d) { d.playDate; })
 
 
         createDayScale();
@@ -517,6 +517,7 @@ function startD3() {
             })
             .attr("stacked_y", function (d) {
                 // here we just stack then one on top of another
+                // console.log(d.artist);
                 var numberOfRows = rowsByDay.get(d.groupDay).length;
                 var totalSpaceRequired = (lineHeight + divider) * numberOfRows;
                 var spaceLeft = blockHeight - 2*verticalPadding - totalSpaceRequired;
